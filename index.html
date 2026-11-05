@@ -128,11 +128,12 @@ body.lit .scrollcue{opacity:1}
 
 /* ============ 2 · FAIXA ============ */
 .band{background:var(--red);overflow:hidden;border-block:1px solid rgba(0,0,0,.16)}
-.band__t{display:flex;width:max-content;animation:slide 36s linear infinite}
+.band__t{display:flex;width:max-content;will-change:transform;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-animation:slide var(--dur,36s) linear infinite;animation:slide var(--dur,36s) linear infinite}
 .band__t > span{display:flex;align-items:center;gap:22px;padding:15px 22px;flex:none;font-family:var(--fd);font-weight:700;font-size:clamp(12px,1.5vw,15px);color:#fff;white-space:nowrap}
 .band__t > span::after{content:"";width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.6);flex:none}
-@keyframes slide{to{transform:translateX(-50%)}}
-.band:hover .band__t{animation-play-state:paused}
+@-webkit-keyframes slide{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(-50%,0,0)}}
+@keyframes slide{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+@media (hover:hover){.band:hover .band__t{animation-play-state:paused}}
 
 /* ============ 3 · BENEFÍCIOS E DETALHES ============ */
 section.bene{background:var(--paper-2);overflow:hidden;padding-bottom:clamp(40px,4.5vw,62px)}
@@ -624,9 +625,20 @@ BOXES.forEach(([nome,desc,img],i)=>{
 
 /* ---------- faixa ---------- */
 const nomes = OPTS.slice(0,10).map(o=>o[0]);
-const seq = [...nomes,...nomes,...nomes];
-document.getElementById("band").innerHTML =
-  seq.map(n=>"<span>"+n+"</span>").join("") + seq.map(n=>"<span>"+n+"</span>").join("");
+const bandEl = document.getElementById("band");
+function buildBand(){
+  const one = nomes.map(n=>"<span>"+n+"</span>").join("");
+  bandEl.innerHTML = one;
+  const w = bandEl.scrollWidth || 1;
+  const reps = Math.max(1, Math.ceil((window.innerWidth + 40) / w));  // só o necessário para cobrir a tela
+  const half = one.repeat(reps);
+  bandEl.innerHTML = half + half;
+  bandEl.style.setProperty("--dur", Math.max(14, (w*reps)/140).toFixed(1) + "s");
+}
+buildBand();
+let bandW = window.innerWidth;
+addEventListener("resize", ()=>{ if(Math.abs(window.innerWidth-bandW) > 80){ bandW = window.innerWidth; buildBand(); } }, {passive:true});
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(buildBand);
 
 /* ---------- estado ---------- */
 const sel = new Set();
