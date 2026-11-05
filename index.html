@@ -128,12 +128,17 @@ body.lit .scrollcue{opacity:1}
 
 /* ============ 2 · FAIXA ============ */
 .band{background:var(--red);overflow:hidden;border-block:1px solid rgba(0,0,0,.16)}
-.band__t{display:flex;width:max-content;will-change:transform;-webkit-backface-visibility:hidden;backface-visibility:hidden;-webkit-animation:slide var(--dur,36s) linear infinite;animation:slide var(--dur,36s) linear infinite}
+.band{position:relative}
+.band::before,.band::after{content:"";position:absolute;top:0;bottom:0;width:28px;z-index:2;pointer-events:none}
+.band::before{left:0;background:linear-gradient(90deg,var(--red),rgba(222,20,16,0))}
+.band::after{right:0;background:linear-gradient(270deg,var(--red),rgba(222,20,16,0))}
+.band__t{display:flex;width:max-content}
+.band__t > span{will-change:transform;-webkit-animation:bandmove var(--dur,30s) linear infinite;animation:bandmove var(--dur,30s) linear infinite}
 .band__t > span{display:flex;align-items:center;gap:22px;padding:15px 22px;flex:none;font-family:var(--fd);font-weight:700;font-size:clamp(12px,1.5vw,15px);color:#fff;white-space:nowrap}
 .band__t > span::after{content:"";width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.6);flex:none}
 @-webkit-keyframes slide{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(-50%,0,0)}}
 @keyframes slide{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
-@media (hover:hover){.band:hover .band__t{animation-play-state:paused}}
+@media (hover:hover){.band:hover .band__t > span{animation-play-state:paused}}
 
 /* ============ 3 · BENEFÍCIOS E DETALHES ============ */
 section.bene{background:var(--paper-2);overflow:hidden;padding-bottom:clamp(40px,4.5vw,62px)}
@@ -633,7 +638,13 @@ function buildBand(){
   const reps = Math.max(1, Math.ceil((window.innerWidth + 40) / w));  // só o necessário para cobrir a tela
   const half = one.repeat(reps);
   bandEl.innerHTML = half + half;
-  bandEl.style.setProperty("--dur", Math.max(14, (w*reps)/140).toFixed(1) + "s");
+  const dist = bandEl.scrollWidth / 2;                       // largura exata de meia faixa
+  let st = document.getElementById("bandKf");
+  if(!st){ st = document.createElement("style"); st.id = "bandKf"; document.head.appendChild(st); }
+  st.textContent =
+    "@-webkit-keyframes bandmove{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(-"+dist+"px,0,0)}}" +
+    "@keyframes bandmove{from{transform:translate3d(0,0,0)}to{transform:translate3d(-"+dist+"px,0,0)}}";
+  bandEl.style.setProperty("--dur", Math.max(14, dist/110).toFixed(1) + "s");
 }
 buildBand();
 let bandW = window.innerWidth;
